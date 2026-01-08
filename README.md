@@ -1,130 +1,220 @@
 # Stability Dashboard
 
-An interactive Streamlit dashboard for monitoring root cause analysis with threshold comparisons.
+Un'applicazione web interattiva per visualizzare e analizzare le root causes dei fallimenti nei test di automazione, permettendo di monitorare la stabilità del framework nel tempo.
 
-## Features
+---
 
-- **Interactive Visualizations**: Dynamic charts showing root cause trends over time
-- **Threshold Monitoring**: Compare actual values against predefined thresholds
-- **Multi-BU Support**: Select different Business Units from a dropdown
-- **Important KPI Highlighting**: Automatically highlights critical KPIs
-- **Data Export**: Download filtered data as CSV
-- **Comprehensive Error Handling**: Robust error handling for all edge cases
-
-## Installation
-
-1. Ensure Python 3.8+ is installed
-2. Install required packages:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-## Usage
-
-### Running Locally
+## 🚀 Quick Start
 
 ```bash
+# 1. Installa le dipendenze
+pip install -r requirements.txt
+
+# 2. Avvia il dashboard
 streamlit run stability_dashboard.py
+
+# 3. Il browser si apre automaticamente su http://localhost:8501
 ```
 
-The dashboard will open automatically in your default web browser at `http://localhost:8501`
+---
 
-### Deploying to Streamlit Cloud
+## 📋 Prerequisiti
 
-1. Push your code to GitHub
-2. Go to [share.streamlit.io](https://share.streamlit.io)
-3. Click "New app"
-4. Select your repository, branch, and `stability_dashboard.py`
-5. Click "Deploy"
+- **Python 3.8+**
+- **File Excel**: `KPIsStabilityTAS.xlsx` con la struttura richiesta (vedi sotto)
 
-**Important**: When deploying, you'll need to update the `EXCEL_FILE_PATH` in the code to point to a file accessible by the cloud instance (e.g., uploaded to the repo or a cloud storage service).
+---
 
-## File Structure
+## 📁 Struttura del Repository
 
 ```
 stability/
-├── stability_dashboard.py  # Main dashboard application
-├── requirements.txt        # Python dependencies
-└── README.md              # This file
+├── stability_dashboard.py      # Applicazione principale
+├── config.py                    # Configurazione
+├── requirements.txt             # Dipendenze Python
+├── sharepoint_helper.py         # Helper SharePoint (legacy)
+├── launch_dashboard.bat         # Script per avvio rapido (Windows)
+├── README.md                    # Questo file
+├── docs/                        # Documentazione
+│   ├── USER_GUIDE.md           # Guida utente completa
+│   ├── IMPLEMENTATION_SUMMARY.md # Dettagli tecnici
+│   ├── RIEPILOGO_FINALE.md     # Riepilogo in italiano
+│   └── archive/                # Documentazione obsoleta
+└── tests/                       # Script di test
+    ├── test_setup.py
+    └── test_sharepoint.py
 ```
 
-## Excel File Requirements
+---
 
-The Excel file should contain:
+## ⚙️ Configurazione
 
-1. **Static Values Sheet**: Contains thresholds and important KPIs for each BU
-   - Row with "Thresholds" label containing threshold percentages
-   - Rows with BU names listing their important KPIs
+Modifica `config.py` per personalizzare:
 
-2. **BU Sheets** (e.g., "Kruidvat"): Contains weekly data
-   - Date/Week column
-   - Root cause columns (Maintenance, System Issue, Configuration, Test Data, etc.)
-   - Values as percentages (e.g., "5.00%" or 0.05)
+```python
+# Percorso file locale (se hai OneDrive sync)
+EXCEL_FILE_PATH = r"C:\Users\...\Stability.xlsx"
 
-## Dashboard Features
+# Link SharePoint per download manuale
+SHAREPOINT_LINK = "https://sharepoint.com/..."
 
-### Overview Section
-- Total data points
-- Number of root causes tracked
-- Number of defined thresholds
+# Funzionalità
+ENABLE_FILE_UPLOAD = True      # Abilita caricamento file
+SHOW_SHAREPOINT_LINK = True    # Mostra link SharePoint
+```
 
-### All Root Causes Overview
-- Combined line chart showing all root causes over time
-- Interactive tooltips with exact values
+---
 
-### Detailed Analysis
-- Individual charts for each root cause
-- Threshold line overlay
-- Highlighted regions where values exceed thresholds
-- Important KPIs marked with ⭐
+## 📊 Come Funziona
 
-### Data Table
-- Raw data view with formatted percentages
-- CSV export functionality
+### Opzione 1: File Locale (OneDrive Sync)
 
-## Error Handling
+Se hai il file sincronizzato con OneDrive:
+- ✅ Dashboard carica automaticamente il file
+- ✅ Si aggiorna quando OneDrive sincronizza
+- ✅ Mostra data ultimo aggiornamento
 
-The dashboard includes comprehensive error handling for:
-- Missing Excel file
-- Missing sheets or columns
-- Invalid data formats
-- Empty datasets
-- Permission errors
+### Opzione 2: File Upload
 
-## Customization
+Se non hai il file in locale:
+1. Apri il dashboard
+2. Click su link SharePoint nella sidebar
+3. Scarica il file da SharePoint
+4. Carica il file nel dashboard (drag & drop)
 
-To customize the dashboard:
+---
 
-1. **Change file path**: Update `EXCEL_FILE_PATH` constant
-2. **Modify colors**: Edit color codes in chart creation methods
-3. **Add new visualizations**: Extend the `StabilityDashboard` class
-4. **Change thresholds**: Update values in the Static Values sheet
+## 📈 Funzionalità
 
-## Troubleshooting
+### Visualizzazioni
+- **Grafici interattivi** per ogni root cause
+- **Linee threshold** per monitoraggio soglie
+- **Evidenziazione automatica** quando si superano i limiti
+- **KPI importanti** marcati con ⭐
 
-### Dashboard won't start
-- Verify Python is installed: `python --version`
-- Check all dependencies are installed: `pip list`
-- Ensure Excel file exists at the specified path
+### Business Units
+- Selezione tramite dropdown
+- Supporto multi-BU (Kruidvat, Trekpleister, ecc.)
+- KPI specifici per ogni BU
 
-### Data not displaying
-- Check sheet names match exactly (case-sensitive)
-- Verify root cause columns contain numeric/percentage data
-- Ensure Static Values sheet has correct format
+### Dati
+- **Tabella dati** con formattazione
+- **Export CSV** per analisi esterne
+- **Date e timestamp** chiari
 
-### Performance issues
-- Large datasets may take longer to load
-- Consider filtering data by date range if needed
+---
 
-## Support
+## 📝 Struttura File Excel Richiesta
 
-For issues or questions, please contact the development team or create an issue in the project repository.
+### Sheet "Static Values"
 
-## Version History
+```
+Row 1: [Label]      | Thresholds
+Row 2: [Root cause] | Maintenance | System Issue | ...
+Row 3: [Values]     | 5%          | 3%           | ...
+...
+Row 6: [BU Names]   | Kruidvat    | Trekpleister | ...
+Row 7: [Important]  | Maint,Sys   | Test Data    | ...
+```
 
-- **v1.0** (2025-01-07): Initial release
-  - Multi-BU support with Kruidvat as primary
-  - Interactive Plotly charts
-  - Threshold monitoring
-  - Important KPI highlighting
-  - CSV export functionality
+### Sheet per ogni BU (es. "Kruidvat")
+
+```
+Date/Week | Maintenance % | System Issue % | Test Data % | ...
+01-01-25  | 2.5%         | 1.8%          | 0.5%        | ...
+08-01-25  | 3.2%         | 2.1%          | 0.8%        | ...
+```
+
+---
+
+## 🛠️ Tecnologie Utilizzate
+
+- **[Streamlit](https://streamlit.io)** - Framework web interattivo
+- **[Plotly](https://plotly.com)** - Grafici interattivi
+- **[Pandas](https://pandas.pydata.org)** - Analisi dati
+- **[openpyxl](https://openpyxl.readthedocs.io)** - Lettura file Excel
+
+---
+
+## 📚 Documentazione
+
+- **[USER_GUIDE.md](docs/USER_GUIDE.md)** - Guida utente completa
+- **[IMPLEMENTATION_SUMMARY.md](docs/IMPLEMENTATION_SUMMARY.md)** - Dettagli tecnici
+- **[RIEPILOGO_FINALE.md](docs/RIEPILOGO_FINALE.md)** - Riepilogo in italiano
+
+---
+
+## 🔧 Risoluzione Problemi
+
+### Dashboard non si avvia
+
+```bash
+# Verifica installazione Python
+python --version
+
+# Reinstalla dipendenze
+pip install -r requirements.txt --upgrade
+
+# Avvia con debug
+streamlit run stability_dashboard.py --logger.level=debug
+```
+
+### File non trovato
+
+- Verifica percorso in `config.py`
+- Usa file uploader come alternativa
+- Controlla che il file esista e sia accessibile
+
+### Grafici non visualizzati
+
+- Verifica struttura file Excel
+- Controlla log nel terminale per errori
+- Assicurati che esistano le colonne root cause
+
+---
+
+## 🚀 Deploy (Opzionale)
+
+Per rendere il dashboard accessibile online:
+
+1. Push su GitHub
+2. Deploy su [Streamlit Cloud](https://share.streamlit.io)
+3. Gli utenti caricano il file tramite uploader
+
+---
+
+## 📄 License
+
+Uso interno - A.S. Watson Europe
+
+---
+
+## 👥 Supporto
+
+Per assistenza o domande:
+- Consulta la [documentazione](docs/)
+- Verifica i [test](tests/) per esempi
+- Contatta il team Automation
+
+---
+
+## 🔄 Versioni
+
+### v2.0 (2025-01-08)
+- ✅ File uploader integrato
+- ✅ Supporto file locale e caricato
+- ✅ UI rinnovata
+- ✅ Link SharePoint per download manuale
+- ✅ Documentazione completa
+
+### v1.0 (2025-01-07)
+- ✅ Dashboard base con grafici interattivi
+- ✅ Supporto multi-BU
+- ✅ Threshold monitoring
+- ✅ Export CSV
+
+---
+
+**Ultimo aggiornamento**: 2025-01-08
+**Versione**: 2.0
+**Status**: ✅ Production Ready

@@ -1,0 +1,11 @@
+[theme]
+# Force light theme
+primaryColor = "#2E86AB"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F5F5F5"
+textColor = "#1a1a1a"
+font = "sans serif"
+base = "light"
+
+[server]
+headless = true

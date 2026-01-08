@@ -10,7 +10,9 @@
       "Bash(dir /b)",
       "Bash(py -c:*)",
       "Bash(py test_data_reading.py)",
-      "Bash(if not exist .streamlit mkdir .streamlit)"
+      "Bash(if not exist .streamlit mkdir .streamlit)",
+      "Bash(py test_sharepoint.py)",
+      "Bash(timeout 5 cat:*)"
     ]
   }
 }

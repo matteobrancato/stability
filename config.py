@@ -4,14 +4,15 @@ Modify these settings to customize the dashboard behavior
 """
 
 # File paths
-# Option 1: Local file path (if OneDrive synced)
+# Local file path (for users with OneDrive sync)
 EXCEL_FILE_PATH = r"C:\Users\mbrancato\OneDrive - A.S. Watson Europe\Documents\Stability.xlsx"
 
-# Option 2: SharePoint/OneDrive direct link (not currently in use)
-USE_SHAREPOINT_LINK = False
-SHAREPOINT_FILE_URL = "https://asweu-my.sharepoint.com/personal/c_maestroni_eu_aswatson_com/_layouts/15/download.aspx?UniqueId=YOUR_FILE_ID"
-# For fallback when offline or if SharePoint fails
-# EXCEL_FILE_PATH = r"C:\Users\mbrancato\PyCharm\Automation\Report\stability\Stability_cache.xlsx"
+# SharePoint link (for manual download - opens in browser)
+SHAREPOINT_LINK = "https://asweu-my.sharepoint.com/:x:/g/personal/c_maestroni_eu_aswatson_com/IQDiiFh9cWnfSaV7i4kftPhZAfD0zUT5faDzqQduMg2GcrY?e=jdXTpF"
+
+# Feature toggles
+ENABLE_FILE_UPLOAD = True  # Allow users to upload Excel file directly in the dashboard
+SHOW_SHAREPOINT_LINK = True  # Show link to SharePoint file for manual download
 
 # Sheet names
 STATIC_VALUES_SHEET = "Static Values"

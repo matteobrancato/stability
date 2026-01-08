@@ -5,7 +5,7 @@ Displays root cause analysis with threshold comparisons
 
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
@@ -20,6 +20,9 @@ except ImportError:
     DASHBOARD_ICON = "📊"
     PAGE_LAYOUT = "wide"
     LOG_LEVEL = "INFO"
+    ENABLE_FILE_UPLOAD = True
+    SHOW_SHAREPOINT_LINK = True
+    SHAREPOINT_LINK = ""
 
 # Configure logging
 logging.basicConfig(level=getattr(logging, LOG_LEVEL, logging.INFO))
@@ -51,34 +54,64 @@ def clean_column_name(col_name: str) -> str:
 class StabilityDashboard:
     """Main dashboard class for stability analysis"""
 
-    def __init__(self, excel_path: str):
+    def __init__(self, excel_source=None):
         """
-        Initialize the dashboard with Excel file path
+        Initialize the dashboard
 
         Args:
-            excel_path: Path to the Excel file
+            excel_source: Can be:
+                - String path to local Excel file
+                - BytesIO object from uploaded file
+                - pd.ExcelFile object
         """
-        self.excel_path = excel_path
+        self.excel_source = excel_source
         self.excel_file = None
         self.thresholds_df = None
         self.available_bus = []
+        self.data_source = "Unknown"
+        self.last_modified = None
 
     def load_excel_file(self) -> bool:
         """
-        Load the Excel file and validate its existence
+        Load the Excel file from the provided source
 
         Returns:
             bool: True if successful, False otherwise
         """
         try:
-            if not Path(self.excel_path).exists():
-                st.error(f"❌ Excel file not found at: {self.excel_path}")
-                st.info("Please ensure the file exists at the specified location.")
-                return False
+            # Case 1: Already a pandas ExcelFile object
+            if isinstance(self.excel_source, pd.ExcelFile):
+                self.excel_file = self.excel_source
+                self.data_source = "Uploaded file"
+                logger.info(f"Using provided ExcelFile object")
+                logger.info(f"Sheets: {self.excel_file.sheet_names}")
+                return True
 
-            self.excel_file = pd.ExcelFile(self.excel_path)
-            logger.info(f"Successfully loaded Excel file with sheets: {self.excel_file.sheet_names}")
-            return True
+            # Case 2: BytesIO object (uploaded file)
+            elif hasattr(self.excel_source, 'read'):
+                self.excel_file = pd.ExcelFile(self.excel_source, engine='openpyxl')
+                self.data_source = "Uploaded file"
+                logger.info(f"Successfully loaded from BytesIO")
+                logger.info(f"Sheets: {self.excel_file.sheet_names}")
+                return True
+
+            # Case 3: String path to local file
+            elif isinstance(self.excel_source, (str, Path)):
+                file_path = Path(self.excel_source)
+                if not file_path.exists():
+                    st.error(f"❌ Excel file not found at: {file_path}")
+                    return False
+
+                self.excel_file = pd.ExcelFile(file_path, engine='openpyxl')
+                self.data_source = f"Local: {file_path.name}"
+                self.last_modified = pd.Timestamp.fromtimestamp(file_path.stat().st_mtime)
+                logger.info(f"Successfully loaded from local file: {file_path}")
+                logger.info(f"Sheets: {self.excel_file.sheet_names}")
+                return True
+
+            else:
+                st.error("❌ Invalid Excel source provided")
+                return False
 
         except Exception as e:
             st.error(f"❌ Error loading Excel file: {str(e)}")
@@ -693,8 +726,66 @@ def main():
         initial_sidebar_state="expanded"
     )
 
+    # Sidebar: File source selection
+    with st.sidebar:
+        st.header("📁 Data Source")
+
+        # Check if local file exists
+        local_file_exists = Path(EXCEL_FILE_PATH).exists() if EXCEL_FILE_PATH else False
+
+        # Option 1: Local file (if available)
+        if local_file_exists:
+            use_local = st.radio(
+                "Select data source:",
+                options=["Use local file", "Upload file"],
+                help="Local file is automatically updated if you have OneDrive sync enabled"
+            )
+            use_uploaded = (use_local == "Upload file")
+        else:
+            st.warning("⚠️ Local file not found")
+            use_uploaded = True
+
+        excel_source = None
+
+        # Local file path
+        if not use_uploaded and local_file_exists:
+            excel_source = EXCEL_FILE_PATH
+            st.success(f"✓ Using local file")
+            file_path = Path(EXCEL_FILE_PATH)
+            last_modified = pd.Timestamp.fromtimestamp(file_path.stat().st_mtime)
+            st.caption(f"Last updated: {last_modified.strftime('%Y-%m-%d %H:%M')}")
+
+        # File uploader
+        elif ENABLE_FILE_UPLOAD:
+            st.info("📤 Upload your Excel file below")
+            uploaded_file = st.file_uploader(
+                "Choose Excel file",
+                type=['xlsx', 'xls'],
+                help="Upload the KPIsStabilityTAS.xlsx file from SharePoint"
+            )
+
+            if uploaded_file:
+                excel_source = uploaded_file
+                st.success(f"✓ File uploaded: {uploaded_file.name}")
+            else:
+                st.warning("👆 Please upload an Excel file to continue")
+
+                # Show SharePoint link if configured
+                if SHOW_SHAREPOINT_LINK and SHAREPOINT_LINK:
+                    st.markdown("---")
+                    st.markdown("### 🔗 Get the file from SharePoint")
+                    st.markdown(f"[Open SharePoint file]({SHAREPOINT_LINK})")
+                    st.caption("Click the link above, then use the Download button in SharePoint")
+
+        st.divider()
+
+    # Stop if no data source available
+    if excel_source is None:
+        st.info("👈 Please select or upload a data file to begin")
+        st.stop()
+
     # Initialize dashboard
-    dashboard = StabilityDashboard(EXCEL_FILE_PATH)
+    dashboard = StabilityDashboard(excel_source=excel_source)
 
     # Load Excel file
     with st.spinner("Loading Excel file..."):
@@ -713,29 +804,28 @@ def main():
         st.error("❌ No Business Units (sheets) found in the Excel file")
         st.stop()
 
-    # Sidebar for BU selection
+    # Continue with sidebar: BU selection
     with st.sidebar:
-        st.header("⚙️ Configuration")
+        st.header("⚙️ Business Unit")
 
         selected_bu = st.selectbox(
-            "Select Business Unit",
+            "Select BU to analyze:",
             options=available_bus,
             index=0 if "Kruidvat" not in available_bus else available_bus.index("Kruidvat"),
-            help="Choose the BU to analyze"
+            help="Choose the Business Unit to analyze"
         )
 
         st.divider()
 
-        # Display file info
-        st.subheader("📁 File Information")
-        st.text(f"File: {Path(EXCEL_FILE_PATH).name}")
-        st.text(f"Available sheets: {len(dashboard.excel_file.sheet_names)}")
+        # Show file info
+        st.caption(f"📊 {len(dashboard.excel_file.sheet_names)} sheets available")
+        if dashboard.last_modified:
+            st.caption(f"🕒 Data from: {dashboard.last_modified.strftime('%Y-%m-%d %H:%M')}")
 
-        st.divider()
-
-        # Refresh button
-        if st.button("🔄 Refresh Data", use_container_width=True):
-            st.rerun()
+        # Refresh button (only if using local file)
+        if not use_uploaded:
+            if st.button("🔄 Reload", use_container_width=True, help="Reload from source"):
+                st.rerun()
 
     # Main content area - simple header
     st.title(f"{selected_bu}")

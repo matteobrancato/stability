@@ -21,13 +21,12 @@ wheels/
 *.egg
 
 # Virtual Environment
+.venv/
 venv/
-env/
 ENV/
-env.bak/
-venv.bak/
+env/
 
-# IDE
+# IDEs
 .vscode/
 .idea/
 *.swp
@@ -36,19 +35,23 @@ venv.bak/
 .DS_Store
 
 # Streamlit
-.streamlit/
 .streamlit/secrets.toml
+
+# Cache
+.cache/
+*.xlsx
+*.xls
+!example.xlsx
 
 # Logs
 *.log
-
-# Excel files (uncomment if you don't want to commit Excel files)
-# *.xlsx
-# *.xls
-
-# Local configuration (if you create environment-specific configs)
-config.local.py
+logs/
 
 # OS
 Thumbs.db
 desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+nul
