@@ -5,7 +5,7 @@ Modify these settings to customize the dashboard behavior
 
 # File paths
 # Local file path (for users with OneDrive sync)
-EXCEL_FILE_PATH = r"C:\Users\mbrancato\OneDrive - A.S. Watson Europe\Documents\Stability.xlsx"
+EXCEL_FILE_PATH = r"C:\Users\mbrancato\OneDrive - A.S. Watson Europe\Documents\KPIsStabilityTAS.xlsx"
 
 # SharePoint link (for manual download - opens in browser)
 SHAREPOINT_LINK = "https://asweu-my.sharepoint.com/:x:/g/personal/c_maestroni_eu_aswatson_com/IQDiiFh9cWnfSaV7i4kftPhZAfD0zUT5faDzqQduMg2GcrY?e=jdXTpF"
