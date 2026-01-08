@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(py --version)",
+      "Bash(py -m pip:*)",
+      "Bash(findstr:*)",
+      "Bash(py -m streamlit:*)",
+      "Bash(py test_setup.py:*)",
+      "Bash(dir /b)",
+      "Bash(py -c:*)",
+      "Bash(py test_data_reading.py)",
+      "Bash(if not exist .streamlit mkdir .streamlit)"
+    ]
+  }
+}
